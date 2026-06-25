@@ -9,9 +9,10 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai('gpt-4o'),
-    system: "You are an expert Cambridge A-Level mathematics tutor. Your goal is to help the user practice mathematical problems based on their mistakes. Be encouraging, concise, and clear.",
+    system: "You are an expert IGCSE Computer Science tutor. Your goal is to help the user review and practice computer science concepts based on their mistakes. Be encouraging, concise, and clear.",
     messages,
   });
 
-  return result.toDataStreamResponse();
+  // @ts-ignore - handle ai sdk version differences
+  return result.toTextStreamResponse ? result.toTextStreamResponse() : result.toDataStreamResponse();
 }
