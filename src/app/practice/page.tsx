@@ -61,7 +61,7 @@ export default function PracticePage() {
             placeholder="Type a message..."
             style={{ flex: 1, padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}
           />
-          <button type="submit" className="btn" disabled={isLoading || !input.trim()} style={{ padding: '0 1.5rem', fontWeight: 600 }}>
+          <button type="submit" className="btn" disabled={isLoading || !input?.trim()} style={{ padding: '0 1.5rem', fontWeight: 600 }}>
             Send
           </button>
         </form>
