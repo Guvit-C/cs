@@ -220,7 +220,7 @@ export default function WeaknessesDashboard() {
                         style={{ padding: '0.5rem' }}
                       >
                         <option value="">Select a question...</option>
-                        {questions.filter((q: any) => q.topic === w.topic && !(w.question_ids || []).includes(q.id)).map((q: any) => (
+                        {questions.filter((q: any) => q.topic === w.topic && (!w.subtopic || q.subtopic === w.subtopic) && !(w.question_ids || []).includes(q.id)).map((q: any) => (
                           <option key={q.id} value={q.id}>{q.code} ({new Date(q.createdAt).toLocaleDateString()})</option>
                         ))}
                       </select>
