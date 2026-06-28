@@ -19,7 +19,10 @@ export default function RootLayout({
             <Link href="/">
               <h1>CS Logger</h1>
             </Link>
-            <nav>
+            <nav style={{ display: 'flex', gap: '1rem' }}>
+              <Link href="/weaknesses" className="btn btn-secondary">
+                Weaknesses
+              </Link>
               <Link href="/log" className="btn">
                 + New Log Entry
               </Link>
