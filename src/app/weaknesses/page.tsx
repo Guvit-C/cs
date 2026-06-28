@@ -125,35 +125,22 @@ export default function WeaknessesDashboard() {
         <Link href="/" className="btn btn-secondary">Back to Dashboard</Link>
       </div>
 
-      {/* SQL Script Warning */}
-      <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid #ffeeba' }}>
-        <strong>Note:</strong> To use the weaknesses feature, please run the following SQL command in your Supabase SQL editor:
-        <pre style={{ marginTop: '0.5rem', background: 'rgba(0,0,0,0.05)', padding: '0.5rem', borderRadius: '0.25rem', overflowX: 'auto' }}>
-{`CREATE TABLE weaknesses (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  subject TEXT NOT NULL,
-  topic TEXT NOT NULL,
-  title TEXT NOT NULL,
-  question_ids UUID[] DEFAULT '{}',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);`}
-        </pre>
-      </div>
+
 
       <div className="form-card" style={{ marginBottom: '3rem' }}>
         <h3>Add New Weakness</h3>
-        <form onSubmit={handleAddWeakness} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <label>Topic</label>
-            <select className="form-control" value={newTopic} onChange={(e) => setNewTopic(e.target.value)}>
+        <form onSubmit={handleAddWeakness} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Topic</label>
+            <select className="form-control" value={newTopic} onChange={(e) => setNewTopic(e.target.value)} style={{ width: '100%', maxWidth: '400px' }}>
               {topics.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
             </select>
           </div>
-          <div style={{ flex: 2, minWidth: '300px' }}>
-            <label>Weakness Description (e.g. "Forgetting integration by parts")</label>
-            <input type="text" className="form-control" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Weakness Description</label>
+            <input type="text" className="form-control" placeholder='e.g. "Misidentifying network topologies"' value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required style={{ width: '100%' }} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div>
             <button type="submit" className="btn" disabled={addingWeakness}>
               {addingWeakness ? 'Adding...' : 'Add Weakness'}
             </button>
