@@ -11,6 +11,7 @@ export default function WeaknessesDashboard() {
   
   const [newTitle, setNewTitle] = useState('');
   const [newTopic, setNewTopic] = useState(topics[0].name);
+  const [newSubtopic, setNewSubtopic] = useState(topics[0].subtopics[0]);
   const [addingWeakness, setAddingWeakness] = useState(false);
   
   // Attach question state
@@ -36,7 +37,7 @@ export default function WeaknessesDashboard() {
       const res = await fetch('/api/weaknesses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: newTopic, title: newTitle }),
+        body: JSON.stringify({ topic: newTopic, subtopic: newSubtopic, title: newTitle }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -132,8 +133,20 @@ export default function WeaknessesDashboard() {
         <form onSubmit={handleAddWeakness} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Topic</label>
-            <select className="form-control" value={newTopic} onChange={(e) => setNewTopic(e.target.value)} style={{ width: '100%', maxWidth: '400px' }}>
+            <select className="form-control" value={newTopic} onChange={(e) => {
+              setNewTopic(e.target.value);
+              const matched = topics.find(t => t.name === e.target.value);
+              if (matched && matched.subtopics.length > 0) {
+                setNewSubtopic(matched.subtopics[0]);
+              }
+            }} style={{ width: '100%', maxWidth: '400px' }}>
               {topics.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Subtopic</label>
+            <select className="form-control" value={newSubtopic} onChange={(e) => setNewSubtopic(e.target.value)} style={{ width: '100%', maxWidth: '400px' }}>
+              {topics.find(t => t.name === newTopic)?.subtopics.map(st => <option key={st} value={st}>{st}</option>)}
             </select>
           </div>
           <div>
@@ -168,7 +181,10 @@ export default function WeaknessesDashboard() {
               {topicWeaknesses.map((w: any) => (
                 <div key={w.id} className="card" style={{ padding: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h3 style={{ margin: '0 0 1rem 0' }}>{w.title}</h3>
+                    <div>
+                      {w.subtopic && <span className="tag" style={{ marginBottom: '0.5rem', display: 'inline-block', backgroundColor: 'var(--bg-color)', color: 'var(--text-secondary)' }}>{w.subtopic}</span>}
+                      <h3 style={{ margin: '0 0 1rem 0' }}>{w.title}</h3>
+                    </div>
                     <button onClick={() => handleDeleteWeakness(w.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Delete</button>
                   </div>
                   

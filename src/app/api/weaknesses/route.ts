@@ -29,9 +29,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { topic, title } = body;
+    const { topic, subtopic, title } = body;
 
-    if (!topic || !title) {
+    if (!topic || !subtopic || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
         {
           subject: 'CS',
           topic,
+          subtopic,
           title,
           question_ids: []
         }
