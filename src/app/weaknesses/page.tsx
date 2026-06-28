@@ -172,13 +172,13 @@ export default function WeaknessesDashboard() {
       {Object.keys(grouped).length === 0 ? (
         <p style={{ color: 'var(--text-secondary)' }}>No weaknesses recorded yet.</p>
       ) : (
-        Object.entries(grouped).map(([topicName, topicWeaknesses]) => (
+        (Object.entries(grouped) as any[]).map(([topicName, topicWeaknesses]) => (
           <div key={topicName} style={{ marginBottom: '3rem' }}>
             <h2 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
               {topicName}
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {topicWeaknesses.map((w) => (
+              {topicWeaknesses.map((w: any) => (
                 <div key={w.id} className="card" style={{ padding: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <h3 style={{ margin: '0 0 1rem 0' }}>{w.title}</h3>
@@ -217,7 +217,7 @@ export default function WeaknessesDashboard() {
                         style={{ padding: '0.5rem' }}
                       >
                         <option value="">Select a question...</option>
-                        {questions.filter(q => q.topic === w.topic && !(w.question_ids || []).includes(q.id)).map(q => (
+                        {questions.filter((q: any) => q.topic === w.topic && !(w.question_ids || []).includes(q.id)).map((q: any) => (
                           <option key={q.id} value={q.id}>{q.code} ({new Date(q.createdAt).toLocaleDateString()})</option>
                         ))}
                       </select>
