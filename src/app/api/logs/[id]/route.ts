@@ -47,11 +47,55 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await request.json();
-    const { code, paper, topic, subtopic, mistakeType, reason, isImportant } = body;
+    const formData = await request.formData();
+    
+    const code = formData.get('code') as string;
+    const paper = formData.get('paper') as string;
+    const topic = formData.get('topic') as string;
+    const subtopic = formData.get('subtopic') as string;
+    const mistakeType = formData.get('mistakeType') as string;
+    const reason = formData.get('reason') as string;
+    const isImportant = formData.get('isImportant') === 'true';
+    
+    const existingImagesStr = formData.get('existingImages') as string;
+    const existingMarkschemeStr = formData.get('existingMarkscheme') as string;
+    
+    const newImages = formData.getAll('new_image') as File[];
+    const newMarkschemeImages = formData.getAll('new_markscheme_image') as File[];
 
     if (!code || !paper || !topic || !subtopic) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    let existingImages: string[] = [];
+    let existingMarkscheme: string[] = [];
+    try {
+      if (existingImagesStr) existingImages = JSON.parse(existingImagesStr);
+      if (existingMarkschemeStr) existingMarkscheme = JSON.parse(existingMarkschemeStr);
+    } catch(e) { console.error("Error parsing existing images array", e); }
+
+    const imageUrls = [...existingImages];
+    for (let i = 0; i < newImages.length; i++) {
+      const image = newImages[i];
+      if (image.size === 0) continue;
+      const ext = image.name.split('.').pop() || 'png';
+      const filename = `${code}_${Date.now()}_${i}.${ext}`;
+      const { error } = await supabase.storage.from('question-images').upload(filename, image, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: publicUrlData } = supabase.storage.from('question-images').getPublicUrl(filename);
+      imageUrls.push(publicUrlData.publicUrl);
+    }
+
+    const markSchemeUrls = [...existingMarkscheme];
+    for (let i = 0; i < newMarkschemeImages.length; i++) {
+      const image = newMarkschemeImages[i];
+      if (image.size === 0) continue;
+      const ext = image.name.split('.').pop() || 'png';
+      const filename = `ms_${code}_${Date.now()}_${i}.${ext}`;
+      const { error } = await supabase.storage.from('question-images').upload(filename, image, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: publicUrlData } = supabase.storage.from('question-images').getPublicUrl(filename);
+      markSchemeUrls.push(publicUrlData.publicUrl);
     }
 
     const { data, error } = await supabase
@@ -63,7 +107,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         subtopic,
         mistake_type: mistakeType || 'Other',
         reason: reason || '',
-        is_important: isImportant
+        is_important: isImportant,
+        image_urls: imageUrls,
+        mark_scheme_urls: markSchemeUrls
       })
       .eq('id', id)
       .select()

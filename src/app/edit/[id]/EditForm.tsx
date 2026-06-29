@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { topics } from '@/lib/topics';
 import Link from 'next/link';
+import ImagePasteZone from '@/components/ImagePasteZone';
 
 export default function EditForm({ initialData }: { initialData: any }) {
   const router = useRouter();
@@ -18,26 +19,43 @@ export default function EditForm({ initialData }: { initialData: any }) {
   const [reason, setReason] = useState(initialData.reason || '');
   const [isImportant, setIsImportant] = useState(initialData.isImportant || false);
 
+  const [existingImages, setExistingImages] = useState<string[]>(initialData.imageUrls || (initialData.imageUrl ? [initialData.imageUrl] : []));
+  const [existingMarkscheme, setExistingMarkscheme] = useState<string[]>(initialData.markSchemeUrls || []);
+
   const selectedTopicObj = topics.find((t) => t.name === topic);
   const availableSubtopics = selectedTopicObj ? selectedTopicObj.subtopics : [];
+
+  const handleRemoveImage = (index: number, type: 'question' | 'markscheme') => {
+    if (type === 'question') {
+      setExistingImages(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setExistingMarkscheme(prev => prev.filter((_, i) => i !== index));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const formData = new FormData(e.currentTarget);
+      formData.append('code', code);
+      formData.append('paper', paper);
+      formData.append('topic', topic);
+      formData.append('subtopic', subtopic);
+      formData.append('mistakeType', mistakeType);
+      formData.append('reason', reason);
+      formData.append('isImportant', String(isImportant));
+      formData.append('existingImages', JSON.stringify(existingImages));
+      formData.append('existingMarkscheme', JSON.stringify(existingMarkscheme));
+
       const res = await fetch(`/api/logs/${initialData.id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code, paper, topic, subtopic, mistakeType, reason, isImportant
-        }),
+        body: formData,
       });
 
       if (res.ok) {
-        router.refresh(); // Refresh to update the parent server component data
+        router.refresh();
         router.push(`/question/${initialData.id}`);
       } else {
         alert('Failed to update question');
@@ -134,6 +152,36 @@ export default function EditForm({ initialData }: { initialData: any }) {
           </div>
 
           <div className="form-group">
+            <label>Existing Question Images</label>
+            {existingImages.length > 0 ? (
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                {existingImages.map((url, i) => (
+                  <div key={i} style={{ position: 'relative' }}>
+                    <img src={url} alt={`Question image ${i+1}`} style={{ height: '100px', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                    <button type="button" onClick={() => handleRemoveImage(i, 'question')} style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>&times;</button>
+                  </div>
+                ))}
+              </div>
+            ) : <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No images currently.</p>}
+          </div>
+          <ImagePasteZone label="Add New Question Images (Optional)" name="new_image" required={false} />
+
+          <div className="form-group" style={{ marginTop: '2rem' }}>
+            <label>Existing Mark Scheme Images</label>
+            {existingMarkscheme.length > 0 ? (
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                {existingMarkscheme.map((url, i) => (
+                  <div key={i} style={{ position: 'relative' }}>
+                    <img src={url} alt={`MS image ${i+1}`} style={{ height: '100px', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                    <button type="button" onClick={() => handleRemoveImage(i, 'markscheme')} style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>&times;</button>
+                  </div>
+                ))}
+              </div>
+            ) : <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No mark scheme images currently.</p>}
+          </div>
+          <ImagePasteZone label="Add New Mark Scheme Images (Optional)" name="new_markscheme_image" required={false} />
+
+          <div className="form-group" style={{ marginTop: '2rem' }}>
             <label htmlFor="mistakeType">Mistake Type</label>
             <select 
               id="mistakeType" 
