@@ -15,16 +15,22 @@ export default function EditForm({ initialData }: { initialData: any }) {
   const [paper, setPaper] = useState(initialData.paper || 'Paper 2');
   const [topic, setTopic] = useState(initialData.topic || topics[0].name);
   const [subtopic, setSubtopic] = useState(initialData.subtopic || topics[0].subtopics[0]);
-  // Parse retry tag if exists
+  // Parse retry tag and note if exists
   const parsedReason = initialData.reason || '';
-  const match = parsedReason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+  let initialCleanReason = parsedReason;
   
-  const initialRetryTag = match ? match[1] : '';
-  const initialCleanReason = match ? (match[2] || '') : parsedReason;
+  const tagMatch = initialCleanReason.match(/^\[TAG:(.+?)\](?:\r?\n)?/);
+  const initialRetryTag = tagMatch ? tagMatch[1] : '';
+  if (tagMatch) initialCleanReason = initialCleanReason.replace(tagMatch[0], '');
+
+  const noteMatch = initialCleanReason.match(/^\[NOTE:([\s\S]+?)\](?:\r?\n)?/);
+  const initialRetryNote = noteMatch ? noteMatch[1] : '';
+  if (noteMatch) initialCleanReason = initialCleanReason.replace(noteMatch[0], '');
 
   const [mistakeType, setMistakeType] = useState(initialData.mistakeType || 'Other');
   const [reason, setReason] = useState(initialCleanReason);
   const [retryTag, setRetryTag] = useState(initialRetryTag);
+  const [retryNote, setRetryNote] = useState(initialRetryNote);
   const [isImportant, setIsImportant] = useState(initialData.isImportant || false);
 
   const [existingImages, setExistingImages] = useState<string[]>(initialData.imageUrls || (initialData.imageUrl ? [initialData.imageUrl] : []));
@@ -51,7 +57,9 @@ export default function EditForm({ initialData }: { initialData: any }) {
       formData.append('paper', paper);
       formData.append('topic', topic);
       formData.append('subtopic', subtopic);
-      const finalReason = retryTag ? `[TAG:${retryTag}]\n${reason}` : reason;
+      let finalReason = reason;
+      if (retryNote) finalReason = `[NOTE:${retryNote}]\n${finalReason}`;
+      if (retryTag) finalReason = `[TAG:${retryTag}]\n${finalReason}`;
       
       formData.append('mistakeType', mistakeType);
       formData.append('reason', finalReason);
@@ -217,10 +225,25 @@ export default function EditForm({ initialData }: { initialData: any }) {
               value={retryTag} 
               onChange={(e) => setRetryTag(e.target.value)} 
               className="form-control" 
-              placeholder='e.g., "Failed", "Silly Mistake", "Mastered", "Needs Review"'
+              placeholder='e.g., "Failed", "Silly Mistake", "Needs Review"'
             />
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-              Type a custom tag after retrying a question to mark your progress.
+              A short category name. This will be used in the dashboard dropdown to filter questions.
+            </p>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="retryNote">Retry Note / Explanation (Optional)</label>
+            <textarea 
+              id="retryNote" 
+              value={retryNote}
+              onChange={(e) => setRetryNote(e.target.value)}
+              className="form-control" 
+              rows={3} 
+              placeholder="Explain what happened during your retry in detail..."
+            ></textarea>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+              Use this for long explanations instead of cramping them into the short status tag.
             </p>
           </div>
 

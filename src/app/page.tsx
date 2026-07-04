@@ -136,8 +136,14 @@ export default function Home() {
                 })()}
               </div>
               <p className="card-reason">{(() => {
-                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
-                return match ? (match[2] || '') : log.reason;
+                let cleanReason = log.reason;
+                const tagMatch = cleanReason.match(/^\[TAG:(.+?)\](?:\r?\n)?/);
+                if (tagMatch) cleanReason = cleanReason.replace(tagMatch[0], '');
+                
+                const noteMatch = cleanReason.match(/^\[NOTE:([\s\S]+?)\](?:\r?\n)?/);
+                if (noteMatch) cleanReason = cleanReason.replace(noteMatch[0], '');
+
+                return cleanReason;
               })()}</p>
             </div>
           </Link>

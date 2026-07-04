@@ -42,15 +42,33 @@ export default function Flashcard({ log }: { log: any }) {
               Missing Keywords / Takeaway
               {log.mistakeType && <span className="tag" style={{ marginLeft: '1rem', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #ef4444' }}>{log.mistakeType}</span>}
               {(() => {
-                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n)?/);
                 const tag = match ? match[1] : null;
                 return tag ? <span className="tag" style={{ marginLeft: '0.5rem', backgroundColor: '#f3e8ff', color: '#9333ea', border: '1px solid #d8b4fe' }}>{tag}</span> : null;
               })()}
             </div>
-            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{(() => {
-                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
-                return match ? (match[2] || '') : log.reason;
-              })()}</p>
+            
+            {(() => {
+                let cleanReason = log.reason;
+                const tagMatch = cleanReason.match(/^\[TAG:(.+?)\](?:\r?\n)?/);
+                if (tagMatch) cleanReason = cleanReason.replace(tagMatch[0], '');
+                
+                const noteMatch = cleanReason.match(/^\[NOTE:([\s\S]+?)\](?:\r?\n)?/);
+                const note = noteMatch ? noteMatch[1] : null;
+                if (noteMatch) cleanReason = cleanReason.replace(noteMatch[0], '');
+
+                return (
+                  <>
+                    {note && (
+                      <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f8fafc', borderLeft: '4px solid #94a3b8', borderRadius: '0.25rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#475569', fontSize: '0.9rem', textTransform: 'uppercase' }}>Retry Note</h4>
+                        <p style={{ fontSize: '1rem', margin: 0, color: '#334155', whiteSpace: 'pre-wrap' }}>{note}</p>
+                      </div>
+                    )}
+                    <p style={{ fontSize: '1.1rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{cleanReason}</p>
+                  </>
+                );
+            })()}
           </div>
         </div>
       )}
