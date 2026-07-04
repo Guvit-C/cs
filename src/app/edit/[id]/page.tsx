@@ -8,7 +8,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   
   const { data: log, error } = await supabase
-    .from('questions')
+    .from('cs_questions')
     .select('*')
     .eq('id', id)
     .single();
@@ -28,9 +28,11 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     paper: log.paper,
     topic: log.topic,
     subtopic: log.subtopic,
+    mistakeType: log.mistake_type || '',
     reason: log.reason,
     isImportant: log.is_important || false,
-    imageUrls: log.image_urls
+    imageUrls: log.image_urls || [],
+    markSchemeUrls: log.mark_scheme_urls || []
   };
 
   return <EditForm initialData={frontendLog} />;
