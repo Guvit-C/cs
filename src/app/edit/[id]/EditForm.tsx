@@ -15,8 +15,16 @@ export default function EditForm({ initialData }: { initialData: any }) {
   const [paper, setPaper] = useState(initialData.paper || 'Paper 2');
   const [topic, setTopic] = useState(initialData.topic || topics[0].name);
   const [subtopic, setSubtopic] = useState(initialData.subtopic || topics[0].subtopics[0]);
+  // Parse retry tag if exists
+  const parsedReason = initialData.reason || '';
+  const match = parsedReason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+  
+  const initialRetryTag = match ? match[1] : '';
+  const initialCleanReason = match ? (match[2] || '') : parsedReason;
+
   const [mistakeType, setMistakeType] = useState(initialData.mistakeType || 'Other');
-  const [reason, setReason] = useState(initialData.reason || '');
+  const [reason, setReason] = useState(initialCleanReason);
+  const [retryTag, setRetryTag] = useState(initialRetryTag);
   const [isImportant, setIsImportant] = useState(initialData.isImportant || false);
 
   const [existingImages, setExistingImages] = useState<string[]>(initialData.imageUrls || (initialData.imageUrl ? [initialData.imageUrl] : []));
@@ -43,8 +51,10 @@ export default function EditForm({ initialData }: { initialData: any }) {
       formData.append('paper', paper);
       formData.append('topic', topic);
       formData.append('subtopic', subtopic);
+      const finalReason = retryTag ? `[TAG:${retryTag}]\n${reason}` : reason;
+      
       formData.append('mistakeType', mistakeType);
-      formData.append('reason', reason);
+      formData.append('reason', finalReason);
       formData.append('isImportant', String(isImportant));
       formData.append('existingImages', JSON.stringify(existingImages));
       formData.append('existingMarkscheme', JSON.stringify(existingMarkscheme));
@@ -197,6 +207,21 @@ export default function EditForm({ initialData }: { initialData: any }) {
               <option value="Conceptual Mix-up">Conceptual Mix-up</option>
               <option value="Other">Other</option>
             </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="retryTag">Custom Retry Status Tag</label>
+            <input 
+              type="text"
+              id="retryTag" 
+              value={retryTag} 
+              onChange={(e) => setRetryTag(e.target.value)} 
+              className="form-control" 
+              placeholder='e.g., "Failed", "Silly Mistake", "Mastered", "Needs Review"'
+            />
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+              Type a custom tag after retrying a question to mark your progress.
+            </p>
           </div>
 
           <div className="form-group">

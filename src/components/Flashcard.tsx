@@ -41,8 +41,16 @@ export default function Flashcard({ log }: { log: any }) {
             <div className="question-reason-title">
               Missing Keywords / Takeaway
               {log.mistakeType && <span className="tag" style={{ marginLeft: '1rem', backgroundColor: '#fee2e2', color: '#ef4444', border: '1px solid #ef4444' }}>{log.mistakeType}</span>}
+              {(() => {
+                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+                const tag = match ? match[1] : null;
+                return tag ? <span className="tag" style={{ marginLeft: '0.5rem', backgroundColor: '#f3e8ff', color: '#9333ea', border: '1px solid #d8b4fe' }}>{tag}</span> : null;
+              })()}
             </div>
-            <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>{log.reason}</p>
+            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{(() => {
+                const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+                return match ? (match[2] || '') : log.reason;
+              })()}</p>
           </div>
         </div>
       )}
