@@ -226,10 +226,14 @@ export default function EditForm({ initialData }: { initialData: any }) {
               className="form-control" 
             >
               <option value="">None / Not Retried</option>
-              <option value="Failed">Failed</option>
-              <option value="Silly Mistake">Silly Mistake</option>
+              <option value="Keyword Omission">Keyword Omission</option>
+              <option value="Logic Error">Logic Error</option>
+              <option value="Tracing Error">Tracing Error</option>
+              <option value="Syntax Error">Syntax Error</option>
+              <option value="Conceptual Mix-up">Conceptual Mix-up</option>
               <option value="Needs Review">Needs Review</option>
               <option value="Mastered">Mastered</option>
+              <option value="Other">Other</option>
             </select>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
               A short category name. This will be used in the dashboard dropdown to filter questions.
