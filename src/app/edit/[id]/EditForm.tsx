@@ -218,15 +218,19 @@ export default function EditForm({ initialData }: { initialData: any }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="retryTag">Custom Retry Status Tag</label>
-            <input 
-              type="text"
+            <label htmlFor="retryTag">Retry Status Tag</label>
+            <select 
               id="retryTag" 
               value={retryTag} 
               onChange={(e) => setRetryTag(e.target.value)} 
               className="form-control" 
-              placeholder='e.g., "Failed", "Silly Mistake", "Needs Review"'
-            />
+            >
+              <option value="">None / Not Retried</option>
+              <option value="Failed">Failed</option>
+              <option value="Silly Mistake">Silly Mistake</option>
+              <option value="Needs Review">Needs Review</option>
+              <option value="Mastered">Mastered</option>
+            </select>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
               A short category name. This will be used in the dashboard dropdown to filter questions.
             </p>
