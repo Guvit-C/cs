@@ -5,12 +5,20 @@ import Link from 'next/link';
 import { topics } from '@/lib/topics';
 
 export default function Home() {
+  const getParam = (key: string) => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      return sp.get(key);
+    }
+    return null;
+  };
+
   const [logs, setLogs] = useState<any[]>([]);
-  const [filterPaper, setFilterPaper] = useState('');
-  const [filterTopic, setFilterTopic] = useState('');
-  const [filterSubtopic, setFilterSubtopic] = useState('');
-  const [filterImportant, setFilterImportant] = useState(false);
-  const [filterTag, setFilterTag] = useState('');
+  const [filterPaper, setFilterPaper] = useState(getParam('paper') || '');
+  const [filterTopic, setFilterTopic] = useState(getParam('topic') || '');
+  const [filterSubtopic, setFilterSubtopic] = useState(getParam('subtopic') || '');
+  const [filterImportant, setFilterImportant] = useState(getParam('important') === 'true');
+  const [filterTag, setFilterTag] = useState(getParam('tag') || '');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -22,23 +30,35 @@ export default function Home() {
   const selectedTopicObj = topics.find((t) => t.name === filterTopic);
   const availableSubtopics = selectedTopicObj ? selectedTopicObj.subtopics : [];
 
-  const availableTags = Array.from(new Set(logs.map(log => {
-    const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
-    return match ? match[1] : null;
-  }).filter(Boolean))) as string[];
+  const getTagForLog = (log: any) => {
+    if (log.revisionHistory && log.revisionHistory.length > 0) {
+      return log.revisionHistory[log.revisionHistory.length - 1].status;
+    }
+    const match = (log.reason || '').match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
+    return match ? match[1] : '';
+  };
+
+  const availableTags = Array.from(new Set(logs.map(getTagForLog).filter(Boolean))) as string[];
 
   const filteredLogs = logs.filter((log) => {
     if (filterPaper && log.paper !== filterPaper) return false;
     if (filterTopic && log.topic !== filterTopic) return false;
     if (filterSubtopic && log.subtopic !== filterSubtopic) return false;
     if (filterImportant && !log.isImportant) return false;
-    if (filterTag) {
-      const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
-      const tag = match ? match[1] : '';
-      if (tag !== filterTag) return false;
-    }
+    if (filterTag && getTagForLog(log) !== filterTag) return false;
     return true;
   });
+
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    if (filterPaper) params.set('paper', filterPaper);
+    if (filterTopic) params.set('topic', filterTopic);
+    if (filterSubtopic) params.set('subtopic', filterSubtopic);
+    if (filterImportant) params.set('important', 'true');
+    if (filterTag) params.set('tag', filterTag);
+    const q = params.toString();
+    return q ? `?${q}` : '';
+  };
 
   return (
     <div>
@@ -116,7 +136,7 @@ export default function Home() {
           <p style={{ color: 'var(--text-secondary)' }}>No questions found.</p>
         )}
         {filteredLogs.map((log) => (
-          <Link href={`/question/${log.id}`} key={log.id} className="card">
+          <Link href={`/question/${log.id}${buildQueryString()}`} key={log.id} className="card">
             <div className="card-img-wrapper">
               <img src={log.imageUrls && log.imageUrls.length > 0 ? log.imageUrls[0] : log.imageUrl} alt={log.code} className="card-img" />
             </div>
@@ -130,8 +150,7 @@ export default function Home() {
                 <span className="tag">{log.topic}</span>
                 {log.mistakeType && <span className="tag" style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}>{log.mistakeType}</span>}
                 {(() => {
-                  const match = log.reason.match(/^\[TAG:(.+?)\](?:\r?\n([\s\S]*))?$/);
-                  const tag = match ? match[1] : null;
+                  const tag = getTagForLog(log);
                   return tag ? <span className="tag" style={{ backgroundColor: '#f3e8ff', color: '#9333ea', border: '1px solid #d8b4fe' }}>{tag}</span> : null;
                 })()}
               </div>

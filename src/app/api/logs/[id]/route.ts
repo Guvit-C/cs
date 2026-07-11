@@ -47,6 +47,23 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      if (body.revision_history !== undefined) {
+        const { data, error } = await supabase
+          .from('cs_questions')
+          .update({ revision_history: body.revision_history })
+          .eq('id', id)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        return NextResponse.json({ success: true, log: data });
+      }
+      return NextResponse.json({ error: 'Missing revision_history' }, { status: 400 });
+    }
+
     const formData = await request.formData();
     
     const code = formData.get('code') as string;

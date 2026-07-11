@@ -142,6 +142,7 @@ export async function GET() {
       imageUrl: d.image_urls && d.image_urls.length > 0 ? d.image_urls[0] : '',
       imageUrls: d.image_urls,
       markSchemeUrls: d.mark_scheme_urls || [],
+      revisionHistory: d.revision_history || [],
       createdAt: d.created_at
     }));
 
