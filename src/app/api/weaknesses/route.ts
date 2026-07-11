@@ -43,6 +43,7 @@ export async function POST(request: Request) {
           topic,
           subtopic,
           title,
+          notes: body.notes || '',
           question_ids: []
         }
       ])
