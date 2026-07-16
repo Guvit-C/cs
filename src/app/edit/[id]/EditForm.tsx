@@ -15,6 +15,10 @@ export default function EditForm({ initialData }: { initialData: any }) {
   const [paper, setPaper] = useState(initialData.paper || 'Paper 2');
   const [topic, setTopic] = useState(initialData.topic || topics[0].name);
   const [subtopic, setSubtopic] = useState(initialData.subtopic || topics[0].subtopics[0]);
+  
+  const [category, setCategory] = useState(initialData.difficultyTag || 'Normal');
+  const [difficultyDescription, setDifficultyDescription] = useState(initialData.difficultyDescription || '');
+
   // Parse retry tag and note if exists
   const parsedReason = initialData.reason || '';
   let initialCleanReason = parsedReason;
@@ -66,6 +70,14 @@ export default function EditForm({ initialData }: { initialData: any }) {
       formData.append('isImportant', String(isImportant));
       formData.append('existingImages', JSON.stringify(existingImages));
       formData.append('existingMarkscheme', JSON.stringify(existingMarkscheme));
+
+      if (category !== 'Normal') {
+        formData.append('difficultyTag', category);
+        formData.append('difficultyDescription', difficultyDescription);
+      } else {
+        formData.append('difficultyTag', '');
+        formData.append('difficultyDescription', '');
+      }
 
       const res = await fetch(`/api/logs/${initialData.id}`, {
         method: 'PATCH',
@@ -216,6 +228,35 @@ export default function EditForm({ initialData }: { initialData: any }) {
               <option value="Other">Other</option>
             </select>
           </div>
+
+          <div className="form-group">
+            <label htmlFor="category">Question Category</label>
+            <select 
+              id="category" 
+              className="form-control" 
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="Normal">Standard Mistake</option>
+              <option value="HARD">HARD (Above current level)</option>
+              <option value="DEP">DEP (Requires future knowledge)</option>
+            </select>
+          </div>
+
+          {category !== 'Normal' && (
+            <div className="form-group">
+              <label htmlFor="difficultyDescription">Short Description (5-7 words)</label>
+              <input 
+                type="text" 
+                id="difficultyDescription" 
+                className="form-control" 
+                value={difficultyDescription}
+                onChange={(e) => setDifficultyDescription(e.target.value)}
+                required={category !== 'Normal'} 
+                placeholder="e.g. Requires future concept" 
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="retryTag">Retry Status Tag</label>

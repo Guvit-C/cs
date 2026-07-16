@@ -36,6 +36,10 @@ async function getLogData(id: string, sp: any) {
         }
         if (tag !== sp.tag) return false;
       }
+      if (sp.category) {
+        if (sp.category === 'Normal' && log.difficulty_tag) return false;
+        if (sp.category !== 'Normal' && log.difficulty_tag !== sp.category) return false;
+      }
       return true;
     });
     
@@ -59,6 +63,8 @@ async function getLogData(id: string, sp: any) {
         imageUrls: dbLog.image_urls,
         markSchemeUrls: dbLog.mark_scheme_urls || [],
         revisionHistory: dbLog.revision_history || [],
+        difficultyTag: dbLog.difficulty_tag || null,
+        difficultyDescription: dbLog.difficulty_description || null,
         createdAt: dbLog.created_at
       };
       return { log: frontendLog, prevId: null, nextId: null };
@@ -81,6 +87,8 @@ async function getLogData(id: string, sp: any) {
       imageUrls: dbLog.image_urls,
       markSchemeUrls: dbLog.mark_scheme_urls || [],
       revisionHistory: dbLog.revision_history || [],
+      difficultyTag: dbLog.difficulty_tag || null,
+      difficultyDescription: dbLog.difficulty_description || null,
       createdAt: dbLog.created_at
     };
     
@@ -113,6 +121,7 @@ export default async function QuestionPage({ params, searchParams }: { params: P
     if (sp.subtopic) params.set('subtopic', sp.subtopic);
     if (sp.important) params.set('important', 'true');
     if (sp.tag) params.set('tag', sp.tag);
+    if (sp.category) params.set('category', sp.category);
     const q = params.toString();
     return q ? `?${q}` : '';
   };
@@ -153,6 +162,11 @@ export default async function QuestionPage({ params, searchParams }: { params: P
       <div className="question-header">
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
           {log.isImportant && <span className="tag" style={{ backgroundColor: '#ff4757', color: 'white', border: 'none' }}>⭐ Very Important</span>}
+          {log.difficultyTag && (
+            <span className="tag" style={{ backgroundColor: log.difficultyTag === 'HARD' ? '#fee2e2' : '#ffedd5', color: log.difficultyTag === 'HARD' ? '#ef4444' : '#f97316', border: `1px solid ${log.difficultyTag === 'HARD' ? '#f87171' : '#fdba74'}`, fontWeight: 700 }}>
+              [{log.difficultyTag}] {log.difficultyDescription}
+            </span>
+          )}
           <span className="tag">{log.paper}</span>
           <span className="tag">{log.topic}</span>
           <span className="tag">{log.subtopic}</span>

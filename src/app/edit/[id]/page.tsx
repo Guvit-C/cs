@@ -31,6 +31,8 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     mistakeType: log.mistake_type || '',
     reason: log.reason,
     isImportant: log.is_important || false,
+    difficultyTag: log.difficulty_tag || null,
+    difficultyDescription: log.difficulty_description || null,
     imageUrls: log.image_urls || [],
     markSchemeUrls: log.mark_scheme_urls || []
   };

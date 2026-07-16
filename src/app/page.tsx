@@ -19,6 +19,7 @@ export default function Home() {
   const [filterSubtopic, setFilterSubtopic] = useState(getParam('subtopic') || '');
   const [filterImportant, setFilterImportant] = useState(getParam('important') === 'true');
   const [filterTag, setFilterTag] = useState(getParam('tag') || '');
+  const [filterCategory, setFilterCategory] = useState(getParam('category') || '');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -46,6 +47,10 @@ export default function Home() {
     if (filterSubtopic && log.subtopic !== filterSubtopic) return false;
     if (filterImportant && !log.isImportant) return false;
     if (filterTag && getTagForLog(log) !== filterTag) return false;
+    if (filterCategory) {
+      if (filterCategory === 'Normal' && log.difficultyTag) return false;
+      if (filterCategory !== 'Normal' && log.difficultyTag !== filterCategory) return false;
+    }
     return true;
   });
 
@@ -56,6 +61,7 @@ export default function Home() {
     if (filterSubtopic) params.set('subtopic', filterSubtopic);
     if (filterImportant) params.set('important', 'true');
     if (filterTag) params.set('tag', filterTag);
+    if (filterCategory) params.set('category', filterCategory);
     const q = params.toString();
     return q ? `?${q}` : '';
   };
@@ -118,6 +124,20 @@ export default function Home() {
           </select>
         </div>
 
+        <div className="filter-group">
+          <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Category</label>
+          <select 
+            className="form-control" 
+            value={filterCategory} 
+            onChange={(e) => setFilterCategory(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            <option value="Normal">Normal (Mistakes)</option>
+            <option value="HARD">HARD</option>
+            <option value="DEP">Dependency</option>
+          </select>
+        </div>
+
         <div className="filter-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-color)', fontWeight: 600 }}>
             <input 
@@ -153,6 +173,11 @@ export default function Home() {
                   const tag = getTagForLog(log);
                   return tag ? <span className="tag" style={{ backgroundColor: '#f3e8ff', color: '#9333ea', border: '1px solid #d8b4fe' }}>{tag}</span> : null;
                 })()}
+                {log.difficultyTag && (
+                  <span className="tag" style={{ backgroundColor: log.difficultyTag === 'HARD' ? '#fee2e2' : '#ffedd5', color: log.difficultyTag === 'HARD' ? '#ef4444' : '#f97316', border: `1px solid ${log.difficultyTag === 'HARD' ? '#f87171' : '#fdba74'}` }}>
+                    [{log.difficultyTag}] {log.difficultyDescription}
+                  </span>
+                )}
               </div>
               <p className="card-reason">{(() => {
                 let cleanReason = log.reason;
